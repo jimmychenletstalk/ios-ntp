@@ -87,8 +87,10 @@
             }
             else {
                 if (timeAssociations.count > 8) {
-                NSLog(@"Clock•Drop: [%@]", timeAssociation.server);
-                    [timeAssociations removeObject:timeAssociation];
+                  NSLog(@"Clock•Drop: [%@]", timeAssociation.server);
+                  if([timeAssociations containsObject:timeAssociation]){
+                      [timeAssociations removeObject:timeAssociation];
+                  }
                     [timeAssociation finish];
                 }
             }
