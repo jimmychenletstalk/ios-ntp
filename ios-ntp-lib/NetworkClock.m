@@ -18,7 +18,7 @@
     NSSortDescriptor *      dispersionSortDescriptor;
 
     dispatch_queue_t        associationDelegateQueue;
-
+    NSLock *locker;
 }
 
 @end
@@ -61,6 +61,7 @@
                                                        initWithTarget:self
                                                        selector:@selector(createAssociations)
                                                        object:nil]];
+        locker = [[NSLock alloc]init];
     }
 
     return self;
@@ -77,7 +78,7 @@
 
     double          timeInterval = 0.0;
     short           usefulCount = 0;
-
+    [locker lock];
     for (NetAssociation * timeAssociation in sortedArray) {
         if (timeAssociation.active) {
             if (timeAssociation.trusty) {
@@ -87,10 +88,8 @@
             }
             else {
                 if (timeAssociations.count > 8) {
-                  NSLog(@"Clock•Drop: [%@]", timeAssociation.server);
-                  if([timeAssociations containsObject:timeAssociation]){
-                      [timeAssociations removeObject:timeAssociation];
-                  }
+                NSLog(@"Clock•Drop: [%@]", timeAssociation.server);
+                    [timeAssociations removeObject:timeAssociation];
                     [timeAssociation finish];
                 }
             }
@@ -98,7 +97,7 @@
             if (usefulCount == 8) break;                // use 8 best dispersions
         }
     }
-
+    [locker unlock];
     if (usefulCount > 0) {
         timeInterval = timeInterval / usefulCount;
 //      NSLog(@"timeIntervalSinceDeviceTime: %f (%d)", timeInterval*1000.0, usefulCount);
